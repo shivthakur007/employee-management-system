@@ -1,37 +1,68 @@
+import streamlit as st
 from db import conn, cursor
+import mysql.connector
 
-# Insert employee (without emp_code)
-insert_query = """
-INSERT INTO employees 
-(first_name, last_name, email, phone, hire_date, salary, department_id, job_id, manager_id, joining_location)
-VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-"""
 
-values = (
-    "Rahul",
-    "Sharma",
-    "rahul@gmail.com",
-    "9999999999",
-    "2025-04-01",
-    30000,
-    1,
-    2,
-    None,
-    "Mumbai"
-)
+st.title("Employee Management System")
 
-cursor.execute(insert_query, values)
-conn.commit()
+menu = ["Add", "View", "Update", "Delete"]
+choice = st.sidebar.selectbox("Menu", menu)
 
-# Get last inserted ID
-emp_id = cursor.lastrowid
+if st.button("Add Employee"):
+    try:
+        insert_query = """
+        INSERT INTO employees 
+        (first_name, last_name, email)
+        VALUES (%s, %s, %s)
+        """
 
-# Generate emp_code
-emp_code = f"S22{str(emp_id).zfill(5)}"
+        values = (first_name, last_name, email)
 
-# Update emp_code
-update_query = "UPDATE employees SET emp_code = %s WHERE employee_id = %s"
-cursor.execute(update_query, (emp_code, emp_id))
-conn.commit()
+        cursor.execute(insert_query, values)
+        conn.commit()
 
-print("Employee inserted with code:", emp_code)
+        emp_id = cursor.lastrowid
+        emp_code = f"S22{str(emp_id).zfill(5)}"
+
+        cursor.execute(
+            "UPDATE employees SET emp_code=%s WHERE employee_id=%s",
+            (emp_code, emp_id)
+        )
+        conn.commit()
+
+        st.success(f"Employee Added: {emp_code}")
+
+    except Exception:
+        st.error("⚠️ Email already exists or error occurred")
+        
+elif choice == "View":
+    st.subheader("Employee List")
+
+    cursor.execute("SELECT employee_id, emp_code, first_name, last_name, salary FROM employees")
+    data = cursor.fetchall()
+
+    st.write(data)
+
+elif choice == "Update":
+    st.subheader("Update Employee Salary")
+
+    emp_id = st.number_input("Enter Employee ID", min_value=1)
+    new_salary = st.number_input("New Salary", min_value=0.0)
+
+    if st.button("Update"):
+        query = "UPDATE employees SET salary=%s WHERE employee_id=%s"
+        cursor.execute(query, (new_salary, emp_id))
+        conn.commit()
+
+        st.success("Employee updated successfully")
+
+elif choice == "Delete":
+    st.subheader("Delete Employee")
+
+    emp_id = st.number_input("Enter Employee ID to delete", min_value=1)
+
+    if st.button("Delete"):
+        cursor.execute("DELETE FROM employees WHERE employee_id=%s", (emp_id,))
+        conn.commit()
+
+        st.warning("Employee deleted successfully")
