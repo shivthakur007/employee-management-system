@@ -1,0 +1,14 @@
+# Virtual Environment
+employee_mgt/
+venv/
+.env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VS Code settings
+.vscode/
+
+# Mac system files
+.DS_Store
