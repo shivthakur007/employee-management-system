@@ -1,7 +1,8 @@
 # Virtual Environment
 employee_mgt/
 venv/
-.env/
+
+.env
 
 # Python cache
 __pycache__/
